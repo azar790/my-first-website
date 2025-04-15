@@ -61,7 +61,7 @@
     </header>
 
     <!-- Main Card -->
-    <div class="weather-card rounded-2xl p-6 w-full max-w-md shadow-2xl overflow-hidden relative animate-fade-in transition-all duration-500">
+    <div id="weatherCard" class="weather-card rounded-2xl p-6 w-full max-w-md shadow-2xl overflow-hidden relative animate-fade-in transition-all duration-500">
       <!-- Loading State -->
       <div id="loading" class="flex flex-col items-center justify-center py-12">
         <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
@@ -113,6 +113,22 @@
             <p id="pressure" class="text-white font-medium">1012 hPa</p>
           </div>
         </div>
+
+        <!-- Refresh Button -->
+        <div class="flex justify-center mt-6">
+          <button id="refreshWeather" class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-all flex items-center gap-2">
+            <i class="fas fa-sync-alt"></i> Refresh Weather
+          </button>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div id="errorState" class="hidden text-center py-8">
+        <i class="fas fa-exclamation-triangle text-3xl text-yellow-400 mb-3"></i>
+        <p id="errorMessage" class="text-white">Could not fetch weather data</p>
+        <button id="retryButton" class="mt-4 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-all">
+          Try Again
+        </button>
       </div>
     </div>
 
@@ -126,20 +142,20 @@
 
     <!-- Footer -->
     <footer class="mt-8 text-center text-white/60 text-sm">
-      <p>Data provided by OpenWeatherMap</p>
+      <p>Powered by Open-Meteo API</p>
       <p class="mt-1">Updated: <span id="updateTime">Just now</span></p>
     </footer>
   </div>
 
   <script>
-    // API Configuration
-    const API_KEY = 'YOUR_OPENWEATHERMAP_API_KEY'; // Replace with your actual API key
-    const BASE_URL = 'https://api.openweathermap.org/data/2.5';
-    
     // DOM Elements
     const elements = {
+      weatherCard: document.getElementById("weatherCard"),
       loading: document.getElementById("loading"),
       weatherContent: document.getElementById("weatherContent"),
+      errorState: document.getElementById("errorState"),
+      errorMessage: document.getElementById("errorMessage"),
+      retryButton: document.getElementById("retryButton"),
       forecast: document.getElementById("forecast"),
       location: document.getElementById("location"),
       date: document.getElementById("date"),
@@ -153,8 +169,13 @@
       pressure: document.getElementById("pressure"),
       updateTime: document.getElementById("updateTime"),
       toggleBtn: document.getElementById("toggleTheme"),
-      themeIcon: document.getElementById("themeIcon")
+      themeIcon: document.getElementById("themeIcon"),
+      refreshWeather: document.getElementById("refreshWeather")
     };
+
+    // Weather API Configuration - Open-Meteo (no API key required)
+    const WEATHER_API_URL = 'https://api.open-meteo.com/v1/forecast';
+    const GEO_API_URL = 'https://geocoding-api.open-meteo.com/v1/search';
 
     // Theme Toggle
     elements.toggleBtn.onclick = () => {
@@ -168,6 +189,10 @@
         : "bg-gray-50 text-gray-800 transition-colors duration-500 gradient-bg min-h-screen";
     };
 
+    // Refresh Weather button
+    elements.refreshWeather.addEventListener('click', fetchWeather);
+    elements.retryButton.addEventListener('click', fetchWeather);
+
     // Format date
     function formatDate(date) {
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -179,38 +204,46 @@
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
-    // Get weather emoji
-    function getWeatherEmoji(weatherId) {
-      // Thunderstorm
-      if (weatherId >= 200 && weatherId < 300) return "⛈️";
-      // Drizzle
-      if (weatherId >= 300 && weatherId < 400) return "🌧️";
-      // Rain
-      if (weatherId >= 500 && weatherId < 600) return "🌧️";
-      // Snow
-      if (weatherId >= 600 && weatherId < 700) return "❄️";
-      // Atmosphere (fog, mist, etc)
-      if (weatherId >= 700 && weatherId < 800) return "🌫️";
+    // Get weather emoji based on WMO weather code
+    // https://open-meteo.com/en/docs#weathervariables
+    function getWeatherEmoji(wmoCode) {
       // Clear
-      if (weatherId === 800) return "☀️";
-      // Clouds
-      if (weatherId > 800) return "☁️";
-      return "🌤️";
+      if (wmoCode === 0) return "☀️";
+      // Mainly clear, partly cloudy
+      if (wmoCode <= 2) return "🌤️";
+      // Overcast
+      if (wmoCode === 3) return "☁️";
+      // Fog
+      if (wmoCode <= 49) return "🌫️";
+      // Drizzle
+      if (wmoCode <= 59) return "🌧️";
+      // Rain
+      if (wmoCode <= 69) return "🌧️";
+      // Snow
+      if (wmoCode <= 79) return "❄️";
+      // Rain showers
+      if (wmoCode <= 82) return "🌦️";
+      // Snow showers
+      if (wmoCode <= 86) return "🌨️";
+      // Thunderstorm
+      if (wmoCode <= 99) return "⛈️";
+      return "🌡️"; // Default
     }
 
-    // Convert Kelvin to Celsius
-    function kelvinToCelsius(kelvin) {
-      return Math.round(kelvin - 273.15);
-    }
-
-    // Convert meters to kilometers
-    function metersToKm(meters) {
-      return (meters / 1000).toFixed(1);
-    }
-
-    // Convert m/s to km/h
-    function msToKmh(ms) {
-      return (ms * 3.6).toFixed(1);
+    // Get weather description based on WMO weather code
+    function getWeatherDescription(wmoCode) {
+      if (wmoCode === 0) return "Clear sky";
+      if (wmoCode === 1) return "Mainly clear";
+      if (wmoCode === 2) return "Partly cloudy";
+      if (wmoCode === 3) return "Overcast";
+      if (wmoCode <= 49) return "Fog";
+      if (wmoCode <= 59) return "Drizzle";
+      if (wmoCode <= 69) return "Rain";
+      if (wmoCode <= 79) return "Snow";
+      if (wmoCode <= 82) return "Rain showers";
+      if (wmoCode <= 86) return "Snow showers";
+      if (wmoCode <= 99) return "Thunderstorm";
+      return "Unknown";
     }
 
     // Get user location by IP address
@@ -274,137 +307,160 @@
       });
     }
 
-    // Fetch current weather
-    async function fetchCurrentWeather(lat, lon) {
-      const response = await fetch(`${BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}`);
-      return await response.json();
+    // Get city name from coordinates using Open-Meteo Geocoding API
+    async function getCityFromCoordinates(lat, lon) {
+      try {
+        const response = await fetch(`${GEO_API_URL}?latitude=${lat}&longitude=${lon}&count=1`);
+        const data = await response.json();
+        
+        if (data.results && data.results.length > 0) {
+          const location = data.results[0];
+          return {
+            name: location.name,
+            country: location.country_code
+          };
+        }
+        throw new Error("Location not found");
+      } catch (error) {
+        console.error("Reverse geocoding error:", error);
+        return null;
+      }
     }
 
-    // Fetch forecast
-    async function fetchForecast(lat, lon) {
-      const response = await fetch(`${BASE_URL}/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}`);
+    // Fetch weather data from Open-Meteo API
+    async function fetchWeatherData(lat, lon) {
+      const params = new URLSearchParams({
+        latitude: lat,
+        longitude: lon,
+        current: "temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m",
+        daily: "weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,precipitation_sum",
+        timezone: "auto",
+        forecast_days: 7
+      });
+      
+      const response = await fetch(`${WEATHER_API_URL}?${params}`);
       return await response.json();
     }
 
     // Update UI with weather data
-    function updateWeatherUI(weatherData, locationData) {
+    async function updateWeatherUI(weatherData, locationData) {
       const now = new Date();
       elements.date.textContent = formatDate(now);
       elements.updateTime.textContent = `Today at ${formatTime(now)}`;
       
-      // Current weather
-      // Handle missing country data by using the value from IP geolocation if available
-      let locationText = weatherData.name || locationData.city || "Unknown Location";
-      
-      // Check if weatherData.sys exists and has country property
-      if (weatherData.sys && weatherData.sys.country) {
-        locationText += `, ${weatherData.sys.country}`;
-      } else if (locationData && locationData.country) {
-        // Use the country from IP geolocation if the weather API didn't provide it
-        locationText += `, ${locationData.country}`;
+      // Get city name if we have coordinates but no location name
+      let locationName = null;
+      if (locationData) {
+        if (locationData.city) {
+          locationName = `${locationData.city}, ${locationData.country}`;
+        } else if (locationData.latitude && locationData.longitude) {
+          const cityData = await getCityFromCoordinates(locationData.latitude, locationData.longitude);
+          if (cityData) {
+            locationName = `${cityData.name}, ${cityData.country}`;
+          }
+        }
       }
       
-      elements.location.textContent = locationText;
-      elements.emoji.textContent = getWeatherEmoji(weatherData.weather[0].id);
-      elements.desc.textContent = weatherData.weather[0].main;
-      elements.currentTemp.textContent = `${kelvinToCelsius(weatherData.main.temp)}°`;
-      elements.feelsLike.textContent = `Feels like ${kelvinToCelsius(weatherData.main.feels_like)}°`;
-      elements.wind.textContent = `${msToKmh(weatherData.wind.speed)} km/h`;
-      elements.humidity.textContent = `${weatherData.main.humidity}%`;
+      // Set location name
+      elements.location.textContent = locationName || "Your Location";
       
-      // Handle optional weather data fields
-      if (weatherData.visibility) {
-        elements.visibility.textContent = `${metersToKm(weatherData.visibility)} km`;
-      } else {
-        elements.visibility.textContent = `N/A`;
-      }
+      // Current weather from Open-Meteo
+      const current = weatherData.current;
       
-      if (weatherData.main.pressure) {
-        elements.pressure.textContent = `${weatherData.main.pressure} hPa`;
-      } else {
-        elements.pressure.textContent = `N/A`;
-      }
+      // Weather icon and description
+      const wmoCode = current.weather_code;
+      elements.emoji.textContent = getWeatherEmoji(wmoCode);
+      elements.desc.textContent = getWeatherDescription(wmoCode);
+      
+      // Temperature
+      elements.currentTemp.textContent = `${Math.round(current.temperature_2m)}°`;
+      elements.feelsLike.textContent = `Feels like ${Math.round(current.apparent_temperature)}°`;
+      
+      // Wind
+      elements.wind.textContent = `${Math.round(current.wind_speed_10m)} km/h`;
+      
+      // Humidity
+      elements.humidity.textContent = `${current.relative_humidity_2m}%`;
+      
+      // Visibility (using cloud cover as proxy since Open-Meteo doesn't provide visibility)
+      const visibility = 100 - current.cloud_cover;
+      elements.visibility.textContent = `${visibility}%`;
+      
+      // Pressure
+      const pressure = current.surface_pressure || current.pressure_msl || "N/A";
+      elements.pressure.textContent = typeof pressure === "number" ? `${Math.round(pressure)} hPa` : pressure;
     }
 
     // Update forecast UI
-    function updateForecastUI(forecastData) {
+    function updateForecastUI(weatherData) {
       const forecastContainer = elements.forecast.querySelector('div');
       forecastContainer.innerHTML = '';
       
       // Check if forecast data is valid
-      if (!forecastData || !forecastData.list || !forecastData.list.length) {
+      if (!weatherData || !weatherData.daily || !weatherData.daily.time) {
         elements.forecast.classList.add('hidden');
         return;
       }
       
-      // Group forecast by day
-      const dailyForecast = {};
-      forecastData.list.forEach(item => {
-        const date = new Date(item.dt * 1000);
-        const day = date.toLocaleDateString(undefined, { weekday: 'short' });
-        
-        if (!dailyForecast[day]) {
-          dailyForecast[day] = {
-            minTemp: kelvinToCelsius(item.main.temp_min),
-            maxTemp: kelvinToCelsius(item.main.temp_max),
-            weatherId: item.weather[0].id,
-            description: item.weather[0].main,
-            date: date
-          };
-        } else {
-          // Update min/max temps
-          const temp = kelvinToCelsius(item.main.temp);
-          if (temp < dailyForecast[day].minTemp) dailyForecast[day].minTemp = temp;
-          if (temp > dailyForecast[day].maxTemp) dailyForecast[day].maxTemp = temp;
-        }
-      });
+      // Get daily forecast data
+      const { time, weather_code, temperature_2m_max, temperature_2m_min } = weatherData.daily;
       
-      // Display forecast for next 5 days
-      Object.entries(dailyForecast).slice(0, 5).forEach(([day, data]) => {
+      // Create daily forecast items (skipping today)
+      for (let i = 1; i < time.length && i <= 5; i++) {
+        const date = new Date(time[i]);
+        const day = date.toLocaleDateString(undefined, { weekday: 'short' });
+        const wmoCode = weather_code[i];
+        const maxTemp = Math.round(temperature_2m_max[i]);
+        const minTemp = Math.round(temperature_2m_min[i]);
+        
         const forecastItem = document.createElement('div');
         forecastItem.className = 'flex items-center justify-between py-2 border-b border-white/10 last:border-0';
         forecastItem.innerHTML = `
           <div class="flex items-center">
             <span class="text-white w-16">${day}</span>
-            <span class="text-2xl mr-3">${getWeatherEmoji(data.weatherId)}</span>
-            <span class="text-white">${data.description}</span>
+            <span class="text-2xl mr-3">${getWeatherEmoji(wmoCode)}</span>
+            <span class="text-white">${getWeatherDescription(wmoCode)}</span>
           </div>
           <div class="text-white">
-            <span class="font-medium">${data.maxTemp}°</span>
-            <span class="text-white/60">/${data.minTemp}°</span>
+            <span class="font-medium">${maxTemp}°</span>
+            <span class="text-white/60">/${minTemp}°</span>
           </div>
         `;
         forecastContainer.appendChild(forecastItem);
-      });
+      }
       
       elements.forecast.classList.remove('hidden');
     }
 
-    // Fetch weather data
+    // Show error message
+    function showError(message) {
+      elements.loading.classList.add('hidden');
+      elements.weatherContent.classList.add('hidden');
+      elements.errorState.classList.remove('hidden');
+      elements.errorMessage.textContent = message || "Could not fetch weather data";
+    }
+
+    // Fetch weather
     async function fetchWeather() {
       try {
         // Show loading state
         elements.loading.classList.remove('hidden');
         elements.weatherContent.classList.add('hidden');
+        elements.errorState.classList.add('hidden');
         elements.forecast.classList.add('hidden');
         
         // Get user location (with fallback to IP)
         const locationData = await getLocation();
         
-        // Fetch current weather and forecast
-        const [currentWeather, forecast] = await Promise.all([
-          fetchCurrentWeather(locationData.latitude, locationData.longitude),
-          fetchForecast(locationData.latitude, locationData.longitude)
-        ]);
-        
-        // Handle API errors
-        if (currentWeather.cod && currentWeather.cod !== 200) {
-          throw new Error(currentWeather.message || "Weather API error");
-        }
+        // Fetch weather data from Open-Meteo
+        const weatherData = await fetchWeatherData(
+          locationData.latitude, 
+          locationData.longitude
+        );
         
         // Update UI
-        updateWeatherUI(currentWeather, locationData);
-        updateForecastUI(forecast);
+        await updateWeatherUI(weatherData, locationData);
+        updateForecastUI(weatherData);
         
         // Show content
         elements.loading.classList.add('hidden');
@@ -412,16 +468,7 @@
         
       } catch (err) {
         console.error("Error fetching weather data:", err);
-        elements.loading.innerHTML = `
-          <div class="text-center py-8">
-            <i class="fas fa-exclamation-triangle text-3xl text-yellow-400 mb-3"></i>
-            <p class="text-white">Could not fetch weather data</p>
-            <p class="text-white/80 text-sm mt-2">${err.message}</p>
-            <button onclick="fetchWeather()" class="mt-4 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-all">
-              Try Again
-            </button>
-          </div>
-        `;
+        showError(err.message);
       }
     }
 
