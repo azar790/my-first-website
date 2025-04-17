@@ -237,7 +237,7 @@
       let bal=P, m=0, sched='', ni=0;
       while(bal>0.01) {
         m++;
-        let pay = (extra>0 && m>=es && m<=ee) ? M+extra : M;
+        let pay = (extra>0 && m>=es && m<=ee) ? extra : M;
         const iPay = bal*r;
         let pPay = pay-iPay;
         if(pPay>bal) { pPay=bal; pay=pPay+iPay; }
@@ -263,7 +263,7 @@
       // extra period
       while(m<ee && bal>0.01) {
         m++;
-        let pay = (extra>0 && m>=es && m<=ee) ? M+extra : M;
+        let pay = (extra>0 && m>=es && m<=ee) ? extra : M;
         const iPay = bal*r;
         let pPay = pay-iPay;
         if(pPay>bal){ pPay=bal; pay=pPay+iPay; }
