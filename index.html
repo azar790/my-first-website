@@ -208,14 +208,14 @@
 
       <!-- Action buttons -->
       <div class="grid grid-cols-2 gap-4 mb-8">
-        <button onclick="calculateLoan()"
+        <button id="calculateBtn"
                 class="py-3 px-6 rounded-lg bg-indigo-600 dark:bg-indigo-500
                        hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white font-medium
                        transition-all hover:shadow-lg flex items-center justify-center">
           <i class="fas fa-calculator mr-2"></i>
           Hesabla
         </button>
-        <button onclick="clearInputs()"
+        <button id="clearBtn"
                 class="py-3 px-6 rounded-lg bg-gray-200 dark:bg-gray-700
                        hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-medium
                        transition-all hover:shadow-lg flex items-center justify-center">
@@ -297,11 +297,22 @@
   </div>
 
   <script>
-    // Dark mode toggle
+    // Wait for DOM to be fully loaded
     document.addEventListener('DOMContentLoaded', function() {
-      // Check if dark mode was previously enabled
+      // Initialize dark mode toggle
+      initDarkMode();
+      
+      // Initialize payment option toggle
+      initPaymentToggle();
+      
+      // Set up button event listeners
+      setupButtonListeners();
+    });
+
+    function initDarkMode() {
+      // Check if dark mode was previously enabled or system preference
       if (localStorage.getItem('darkMode') === 'true' || 
-          (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         document.documentElement.classList.add('dark');
         document.getElementById('themeToggle').checked = true;
       }
@@ -316,10 +327,9 @@
           localStorage.setItem('darkMode', 'false');
         }
       });
-    });
+    }
 
-    // Payment option toggle
-    document.addEventListener('DOMContentLoaded', function() {
+    function initPaymentToggle() {
       const paymentToggle = document.getElementById('paymentToggle');
       const toggleLabel = document.getElementById('toggleLabel');
       
@@ -328,9 +338,16 @@
           ? 'Aylıq ödəniş üzrə' 
           : 'Tarix üzrə';
       });
-    });
+    }
 
-    // Clear all inputs
+    function setupButtonListeners() {
+      // Calculate button
+      document.getElementById('calculateBtn').addEventListener('click', calculateLoan);
+      
+      // Clear button
+      document.getElementById('clearBtn').addEventListener('click', clearInputs);
+    }
+
     function clearInputs() {
       document.getElementById('loanAmount').value = '';
       document.getElementById('interestRate').value = '';
@@ -350,7 +367,6 @@
       });
     }
 
-    // Loan calculation functions
     function calculateLoan() {
       const P = parseFloat(document.getElementById('loanAmount').value);
       const annualRate = parseFloat(document.getElementById('interestRate').value);
