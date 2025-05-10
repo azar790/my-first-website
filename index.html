@@ -4,18 +4,69 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kredit Kalkulyatoru</title>
-
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Configure Tailwind dark mode -->
   <script>
     tailwind.config = { 
-      darkMode: 'class'
+      darkMode: 'class',
+      theme: {
+        extend: {
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-in-out',
+            'slide-up': 'slideUp 0.5s ease-out',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            slideUp: {
+              '0%': { transform: 'translateY(20px)', opacity: '0' },
+              '100%': { transform: 'translateY(0)', opacity: '1' },
+            }
+          }
+        }
+      }
     }
   </script>
   <style>
-    /* Custom styles for toggle switches */
+    /* Custom styles */
+    .gradient-bg {
+      background: linear-gradient(135deg, #6b46c1 0%, #3b82f6 100%);
+    }
+    
+    .gradient-card {
+      background: linear-gradient(145deg, #ffffff 0%, #f5f3ff 100%);
+    }
+    
+    .dark .gradient-card {
+      background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+    }
+    
     .toggle-switch input:checked + .slider span {
       transform: translateX(20px);
+    }
+    
+    .input-field {
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    .input-field:focus {
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+    }
+    
+    .dark .input-field:focus {
+      box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.3);
+    }
+    
+    .hover-scale {
+      transition: transform 0.3s ease;
+    }
+    
+    .hover-scale:hover {
+      transform: translateY(-2px);
     }
     
     @media (max-width: 768px) {
@@ -28,154 +79,240 @@
     }
   </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 p-4 md:p-8">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 p-4 md:p-8 min-h-screen">
 
-  <div class="max-w-5xl mx-auto bg-white dark:bg-gray-800 p-4 md:p-6 rounded shadow">
-
-    <!-- header: title + dark‑mode switch -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
-      <h1 class="text-xl md:text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-        Kredit Kalkulyatoru
-      </h1>
-      <label class="inline-flex items-center cursor-pointer toggle-switch">
-        <input type="checkbox" id="themeToggle" class="sr-only peer" />
-        <div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full
-                    peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300
-                    peer-checked:bg-yellow-400 transition-colors relative slider">
-          <span class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full
-                       transition-transform duration-300 ease-in-out"></span>
+  <div class="max-w-5xl mx-auto">
+    <!-- Gradient header -->
+    <div class="gradient-bg rounded-t-xl p-6 text-white shadow-lg mb-6 animate-fade-in">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-2xl md:text-3xl font-bold flex items-center">
+            <i class="fas fa-calculator mr-3"></i>
+            Kredit Kalkulyatoru
+          </h1>
+          <p class="opacity-90 mt-1">Kredit ödənişlərinizi hesablamaq üçün rahat alət</p>
         </div>
-        <span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-          Dark Mode
-        </span>
-      </label>
-    </div>
-
-    <!-- loan inputs -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-      <div>
-        <label class="text-sm">Kredit Məbləği (₼)</label>
-        <input id="loanAmount" type="number"
-               class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded
-                      bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-               placeholder="Məbləğ" />
-      </div>
-      <div>
-        <label class="text-sm">Faiz Dərəcəsi (%)</label>
-        <input id="interestRate" type="number" step="0.01"
-               class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded
-                      bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-               placeholder="Faiz" />
-      </div>
-      <div>
-        <label class="text-sm">Müddət (ay)</label>
-        <input id="loanTerm" type="number"
-               class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded
-                      bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-               placeholder="Ay" />
+        <label class="inline-flex items-center cursor-pointer toggle-switch">
+          <input type="checkbox" id="themeToggle" class="sr-only peer" />
+          <div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full
+                      peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300
+                      peer-checked:bg-yellow-400 transition-colors relative slider">
+            <span class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full
+                         transition-transform duration-300 ease-in-out flex items-center justify-center">
+              <i class="fas fa-moon text-xs text-gray-700 dark:hidden"></i>
+              <i class="fas fa-sun text-xs text-yellow-500 hidden dark:block"></i>
+            </span>
+          </div>
+          <span class="ml-3 text-sm font-medium text-white dark:text-gray-300">
+            Dark Mode
+          </span>
+        </label>
       </div>
     </div>
 
-    <!-- extra payment -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div>
-        <label class="text-sm">Əlavə Ödəniş Aylıq Məbləği (₼)</label>
-        <input id="extraAmount" type="number"
-               class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded
-                      bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-               placeholder="Məbləğ" />
+    <!-- Main card -->
+    <div class="gradient-card dark:gradient-card rounded-b-xl shadow-lg p-4 md:p-6 animate-slide-up">
+      <!-- loan inputs -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="hover-scale">
+          <label class="text-sm font-medium mb-1 flex items-center">
+            <i class="fas fa-money-bill-wave mr-2 text-indigo-500"></i>
+            Kredit Məbləği (₼)
+          </label>
+          <input id="loanAmount" type="number"
+                 class="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-lg
+                        bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 input-field"
+                 placeholder="Məs: 10000" />
+        </div>
+        <div class="hover-scale">
+          <label class="text-sm font-medium mb-1 flex items-center">
+            <i class="fas fa-percent mr-2 text-indigo-500"></i>
+            Faiz Dərəcəsi (%)
+          </label>
+          <input id="interestRate" type="number" step="0.01"
+                 class="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-lg
+                        bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 input-field"
+                 placeholder="Məs: 12.5" />
+        </div>
+        <div class="hover-scale">
+          <label class="text-sm font-medium mb-1 flex items-center">
+            <i class="far fa-calendar-alt mr-2 text-indigo-500"></i>
+            Müddət (ay)
+          </label>
+          <input id="loanTerm" type="number"
+                 class="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-lg
+                        bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 input-field"
+                 placeholder="Məs: 36" />
+        </div>
       </div>
-      <div>
-        <label class="text-sm">Başlanğıc Ay</label>
-        <input id="extraStart" type="number"
-               class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded
-                      bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-               placeholder="məs: 13" />
-      </div>
-      <div>
-        <label class="text-sm">Son Ay</label>
-        <input id="extraEnd" type="number"
-               class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded
-                      bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-               placeholder="məs: 18" />
-      </div>
-    </div>
 
-    <!-- payment‑option toggle -->
-    <div class="mb-6">
-      <label class="text-sm block mb-2">Ödəniş Seçimi:</label>
-      <label class="inline-flex items-center cursor-pointer toggle-switch">
-        <input type="checkbox" id="paymentToggle" class="sr-only peer" />
-        <div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full
-                    peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300
-                    peer-checked:bg-indigo-600 transition-colors relative slider">
-          <span class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full
-                       transition-transform duration-300 ease-in-out"></span>
+      <!-- extra payment -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div class="hover-scale">
+          <label class="text-sm font-medium mb-1 flex items-center">
+            <i class="fas fa-plus-circle mr-2 text-indigo-500"></i>
+            Əlavə Ödəniş (₼)
+          </label>
+          <input id="extraAmount" type="number"
+                 class="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-lg
+                        bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 input-field"
+                 placeholder="Məbləğ" />
         </div>
-        <span id="toggleLabel" class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-          Tarix üzrə
-        </span>
-      </label>
-    </div>
-
-    <button onclick="calculateLoan()"
-            class="w-full py-2 px-4 rounded bg-indigo-600 dark:bg-indigo-500
-                   hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white mb-6">
-      Hesabla
-    </button>
-
-    <!-- results -->
-    <div id="results" class="hidden">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 text-center mb-4">
-        <div class="bg-gray-100 dark:bg-gray-700 p-2 md:p-4 rounded">
-          <p class="text-xs md:text-sm">Standart Aylıq Ödəniş</p>
-          <p id="monthly" class="text-lg md:text-xl font-bold text-indigo-700 dark:text-indigo-400">₼0.00</p>
+        <div class="hover-scale">
+          <label class="text-sm font-medium mb-1 flex items-center">
+            <i class="fas fa-play-circle mr-2 text-indigo-500"></i>
+            Başlanğıc Ay
+          </label>
+          <input id="extraStart" type="number"
+                 class="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-lg
+                        bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 input-field"
+                 placeholder="Məs: 13" />
         </div>
-        <div class="bg-gray-100 dark:bg-gray-700 p-2 md:p-4 rounded">
-          <p class="text-xs md:text-sm">Əvvəlki Ümumi Faiz</p>
-          <p id="originalInterest" class="text-lg md:text-xl font-bold text-red-500 dark:text-red-400">₼0.00</p>
-        </div>
-        <div class="bg-gray-100 dark:bg-gray-700 p-2 md:p-4 rounded">
-          <p class="text-xs md:text-sm">Yeni Ümumi Faiz</p>
-          <p id="newInterest" class="text-lg md:text-xl font-bold text-green-600 dark:text-green-400">₼0.00</p>
-        </div>
-        <div class="bg-gray-100 dark:bg-gray-700 p-2 md:p-4 rounded">
-          <p class="text-xs md:text-sm">Qənaət (Faiz)</p>
-          <p id="savedInterest" class="text-lg md:text-xl font-bold text-blue-600 dark:text-blue-400">₼0.00</p>
+        <div class="hover-scale">
+          <label class="text-sm font-medium mb-1 flex items-center">
+            <i class="fas fa-stop-circle mr-2 text-indigo-500"></i>
+            Son Ay
+          </label>
+          <input id="extraEnd" type="number"
+                 class="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-lg
+                        bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 input-field"
+                 placeholder="Məs: 18" />
         </div>
       </div>
-      <div class="text-center mb-6">
-        <p class="font-medium text-sm md:text-base">Yeni Müddət:
-          <span id="newMonths" class="text-indigo-700 dark:text-indigo-400 font-semibold">0</span>
-          ay
+
+      <!-- payment‑option toggle -->
+      <div class="mb-8 bg-gray-100 dark:bg-gray-700 p-4 rounded-lg hover-scale">
+        <label class="text-sm font-medium block mb-2 flex items-center">
+          <i class="fas fa-exchange-alt mr-2 text-indigo-500"></i>
+          Ödəniş Seçimi:
+        </label>
+        <label class="inline-flex items-center cursor-pointer toggle-switch">
+          <input type="checkbox" id="paymentToggle" class="sr-only peer" />
+          <div class="w-11 h-6 bg-gray-200 dark:bg-gray-600 rounded-full
+                      peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300
+                      peer-checked:bg-indigo-600 transition-colors relative slider">
+            <span class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full
+                         transition-transform duration-300 ease-in-out flex items-center justify-center">
+              <i class="fas fa-calendar-day text-xs text-indigo-600 peer-checked:hidden"></i>
+              <i class="fas fa-money-bill text-xs text-green-500 hidden peer-checked:block"></i>
+            </span>
+          </div>
+          <span id="toggleLabel" class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+            Tarix üzrə
+          </span>
+        </label>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+          "Tarix üzrə" - müddət dəyişir, "Aylıq ödəniş üzrə" - aylıq ödəniş dəyişir
         </p>
-        <p class="font-medium text-sm md:text-base">Yeni Aylıq Ödəniş:
-          <span id="newMonthlyPayment" class="text-indigo-700 dark:text-indigo-400 font-semibold">₼0.00</span>
-        </p>
       </div>
-      <h2 class="text-lg font-semibold mb-2">Aylıq Cədvəl</h2>
-      <div class="overflow-auto max-h-[400px] border border-gray-300 dark:border-gray-600 rounded">
-        <table class="w-full text-xs md:text-sm text-left">
-          <thead class="bg-gray-200 dark:bg-gray-700 sticky top-0">
-            <tr>
-              <th class="p-1 md:p-2 border">Ay</th>
-              <th class="p-1 md:p-2 border">Ödəniş (₼)</th>
-              <th class="p-1 md:p-2 border">Əsas (₼)</th>
-              <th class="p-1 md:p-2 border">Faiz (₼)</th>
-              <th class="p-1 md:p-2 border">Qalıq Borc (₼)</th>
-            </tr>
-          </thead>
-          <tbody id="schedule" class="bg-white dark:bg-gray-800 divide-y"></tbody>
-        </table>
+
+      <!-- Action buttons -->
+      <div class="grid grid-cols-2 gap-4 mb-8">
+        <button id="calculateBtn"
+                class="py-3 px-6 rounded-lg bg-indigo-600 dark:bg-indigo-500
+                       hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white font-medium
+                       transition-all hover:shadow-lg flex items-center justify-center">
+          <i class="fas fa-calculator mr-2"></i>
+          Hesabla
+        </button>
+        <button id="clearBtn"
+                class="py-3 px-6 rounded-lg bg-gray-200 dark:bg-gray-700
+                       hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-medium
+                       transition-all hover:shadow-lg flex items-center justify-center">
+          <i class="fas fa-broom mr-2"></i>
+          Təmizlə
+        </button>
       </div>
+
+      <!-- results -->
+      <div id="results" class="hidden animate-fade-in">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 text-center mb-6">
+          <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg hover-scale">
+            <p class="text-xs md:text-sm flex items-center justify-center">
+              <i class="fas fa-wallet mr-2 text-indigo-500"></i>
+              Standart Aylıq Ödəniş
+            </p>
+            <p id="monthly" class="text-lg md:text-xl font-bold text-indigo-700 dark:text-indigo-400 mt-1">₼0.00</p>
+          </div>
+          <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg hover-scale">
+            <p class="text-xs md:text-sm flex items-center justify-center">
+              <i class="fas fa-coins mr-2 text-red-500"></i>
+              Əvvəlki Ümumi Faiz
+            </p>
+            <p id="originalInterest" class="text-lg md:text-xl font-bold text-red-500 dark:text-red-400 mt-1">₼0.00</p>
+          </div>
+          <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg hover-scale">
+            <p class="text-xs md:text-sm flex items-center justify-center">
+              <i class="fas fa-coins mr-2 text-green-500"></i>
+              Yeni Ümumi Faiz
+            </p>
+            <p id="newInterest" class="text-lg md:text-xl font-bold text-green-600 dark:text-green-400 mt-1">₼0.00</p>
+          </div>
+          <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg hover-scale">
+            <p class="text-xs md:text-sm flex items-center justify-center">
+              <i class="fas fa-piggy-bank mr-2 text-blue-500"></i>
+              Qənaət (Faiz)
+            </p>
+            <p id="savedInterest" class="text-lg md:text-xl font-bold text-blue-600 dark:text-blue-400 mt-1">₼0.00</p>
+          </div>
+        </div>
+        <div class="text-center mb-6 bg-indigo-50 dark:bg-indigo-900/30 p-4 rounded-lg">
+          <p class="font-medium text-sm md:text-base mb-1">
+            <i class="far fa-clock mr-2"></i>
+            Yeni Müddət:
+            <span id="newMonths" class="text-indigo-700 dark:text-indigo-400 font-semibold">0</span>
+            ay
+          </p>
+          <p class="font-medium text-sm md:text-base">
+            <i class="fas fa-money-check-alt mr-2"></i>
+            Yeni Aylıq Ödəniş:
+            <span id="newMonthlyPayment" class="text-indigo-700 dark:text-indigo-400 font-semibold">₼0.00</span>
+          </p>
+        </div>
+        <h2 class="text-lg font-semibold mb-3 flex items-center">
+          <i class="fas fa-table mr-2 text-indigo-500"></i>
+          Aylıq Cədvəl
+        </h2>
+        <div class="overflow-auto max-h-[400px] border border-gray-200 dark:border-gray-600 rounded-lg shadow-inner">
+          <table class="w-full text-xs md:text-sm text-left">
+            <thead class="bg-gray-100 dark:bg-gray-700 sticky top-0">
+              <tr>
+                <th class="p-2 md:p-3 border border-gray-200 dark:border-gray-600">Ay</th>
+                <th class="p-2 md:p-3 border border-gray-200 dark:border-gray-600">Ödəniş (₼)</th>
+                <th class="p-2 md:p-3 border border-gray-200 dark:border-gray-600">Əsas (₼)</th>
+                <th class="p-2 md:p-3 border border-gray-200 dark:border-gray-600">Faiz (₼)</th>
+                <th class="p-2 md:p-3 border border-gray-200 dark:border-gray-600">Qalıq Borc (₼)</th>
+              </tr>
+            </thead>
+            <tbody id="schedule" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
+      <p>© 2025 Kredit Kalkulyatoru | Bütün hüquqlar qorunur</p>
     </div>
   </div>
 
   <script>
-    // Dark mode toggle - FIXED
+    // Wait for DOM to be fully loaded
     document.addEventListener('DOMContentLoaded', function() {
-      // Check if dark mode was previously enabled
-      if (localStorage.getItem('darkMode') === 'true') {
+      // Initialize dark mode toggle
+      initDarkMode();
+      
+      // Initialize payment option toggle
+      initPaymentToggle();
+      
+      // Set up button event listeners
+      setupButtonListeners();
+    });
+
+    function initDarkMode() {
+      // Check if dark mode was previously enabled or system preference
+      if (localStorage.getItem('darkMode') === 'true' || 
+          (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         document.documentElement.classList.add('dark');
         document.getElementById('themeToggle').checked = true;
       }
@@ -190,10 +327,9 @@
           localStorage.setItem('darkMode', 'false');
         }
       });
-    });
+    }
 
-    // Payment option toggle - FIXED
-    document.addEventListener('DOMContentLoaded', function() {
+    function initPaymentToggle() {
       const paymentToggle = document.getElementById('paymentToggle');
       const toggleLabel = document.getElementById('toggleLabel');
       
@@ -202,9 +338,35 @@
           ? 'Aylıq ödəniş üzrə' 
           : 'Tarix üzrə';
       });
-    });
+    }
 
-    // Loan calculation functions
+    function setupButtonListeners() {
+      // Calculate button
+      document.getElementById('calculateBtn').addEventListener('click', calculateLoan);
+      
+      // Clear button
+      document.getElementById('clearBtn').addEventListener('click', clearInputs);
+    }
+
+    function clearInputs() {
+      document.getElementById('loanAmount').value = '';
+      document.getElementById('interestRate').value = '';
+      document.getElementById('loanTerm').value = '';
+      document.getElementById('extraAmount').value = '';
+      document.getElementById('extraStart').value = '';
+      document.getElementById('extraEnd').value = '';
+      document.getElementById('results').classList.add('hidden');
+      
+      // Add animation effect
+      const inputs = document.querySelectorAll('input');
+      inputs.forEach(input => {
+        input.classList.add('animate-pulse');
+        setTimeout(() => {
+          input.classList.remove('animate-pulse');
+        }, 500);
+      });
+    }
+
     function calculateLoan() {
       const P = parseFloat(document.getElementById('loanAmount').value);
       const annualRate = parseFloat(document.getElementById('interestRate').value);
@@ -214,7 +376,8 @@
       const extraEnd = parseInt(document.getElementById('extraEnd').value) || 0;
 
       if (!P || !annualRate || !n) {
-        return alert("Zəhmət olmasa, kredit məbləği, faiz dərəcəsi və kredit müddətini daxil edin.");
+        alert("Zəhmət olmasa, kredit məbləği, faiz dərəcəsi və kredit müddətini daxil edin.");
+        return;
       }
 
       const r = annualRate/100/12;
@@ -230,24 +393,26 @@
         calcPay(P,r,n,M,extraAmount,extraStart,extraEnd);
       }
 
+      // Scroll to results
       document.getElementById('results').classList.remove('hidden');
+      document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
     }
 
     function calcTerm(P,r,n,M,extra,es,ee) {
       let bal=P, m=0, sched='', ni=0;
       while(bal>0.01) {
         m++;
-        let pay = (extra>0 && m>=es && m<=ee) ? extra : M;
+        let pay = (extra>0 && m>=es && m<=ee) ? M + extra : M;
         const iPay = bal*r;
         let pPay = pay-iPay;
         if(pPay>bal) { pPay=bal; pay=pPay+iPay; }
         bal-=pPay; ni+=iPay;
-        sched += `<tr>
-                    <td class="p-1 md:p-2 border">${m}</td>
-                    <td class="p-1 md:p-2 border">₼${pay.toFixed(2)}</td>
-                    <td class="p-1 md:p-2 border">₼${pPay.toFixed(2)}</td>
-                    <td class="p-1 md:p-2 border">₼${iPay.toFixed(2)}</td>
-                    <td class="p-1 md:p-2 border">₼${bal>0?bal.toFixed(2):'0.00'}</td>
+        sched += `<tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <td class="p-2 md:p-3 border border-gray-200 dark:border-gray-600">${m}</td>
+                    <td class="p-2 md:p-3 border border-gray-200 dark:border-gray-600">₼${pay.toFixed(2)}</td>
+                    <td class="p-2 md:p-3 border border-gray-200 dark:border-gray-600">₼${pPay.toFixed(2)}</td>
+                    <td class="p-2 md:p-3 border border-gray-200 dark:border-gray-600">₼${iPay.toFixed(2)}</td>
+                    <td class="p-2 md:p-3 border border-gray-200 dark:border-gray-600">₼${bal>0?bal.toFixed(2):'0.00'}</td>
                   </tr>`;
       }
       const saved = (M*n-P)-ni;
@@ -263,17 +428,17 @@
       // extra period
       while(m<ee && bal>0.01) {
         m++;
-        let pay = (extra>0 && m>=es && m<=ee) ? extra : M;
+        let pay = (extra>0 && m>=es && m<=ee) ? M + extra : M;
         const iPay = bal*r;
         let pPay = pay-iPay;
         if(pPay>bal){ pPay=bal; pay=pPay+iPay; }
         bal-=pPay; ni+=iPay;
-        sched += `<tr>
-                    <td class="p-1 md:p-2 border">${m}</td>
-                    <td class="p-1 md:p-2 border">₼${pay.toFixed(2)}</td>
-                    <td class="p-1 md:p-2 border">₼${pPay.toFixed(2)}</td>
-                    <td class="p-1 md:p-2 border">₼${iPay.toFixed(2)}</td>
-                    <td class="p-1 md:p-2 border">₼${bal>0?bal.toFixed(2):'0.00'}</td>
+        sched += `<tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <td class="p-2 md:p-3 border border-gray-200 dark:border-gray-600">${m}</td>
+                    <td class="p-2 md:p-3 border border-gray-200 dark:border-gray-600">₼${pay.toFixed(2)}</td>
+                    <td class="p-2 md:p-3 border border-gray-200 dark:border-gray-600">₼${pPay.toFixed(2)}</td>
+                    <td class="p-2 md:p-3 border border-gray-200 dark:border-gray-600">₼${iPay.toFixed(2)}</td>
+                    <td class="p-2 md:p-3 border border-gray-200 dark:border-gray-600">₼${bal>0?bal.toFixed(2):'0.00'}</td>
                   </tr>`;
       }
       const rem = n-m;
@@ -286,12 +451,12 @@
           let pPay = pay-iPay;
           if(pPay>bal){ pPay=bal; pay=pPay+iPay; }
           bal-=pPay; ni+=iPay;
-          sched += `<tr>
-                      <td class="p-1 md:p-2 border">${m}</td>
-                      <td class="p-1 md:p-2 border">₼${pay.toFixed(2)}</td>
-                      <td class="p-1 md:p-2 border">₼${pPay.toFixed(2)}</td>
-                      <td class="p-1 md:p-2 border">₼${iPay.toFixed(2)}</td>
-                      <td class="p-1 md:p-2 border">₼${bal>0?bal.toFixed(2):'0.00'}</td>
+          sched += `<tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                      <td class="p-2 md:p-3 border border-gray-200 dark:border-gray-600">${m}</td>
+                      <td class="p-2 md:p-3 border border-gray-200 dark:border-gray-600">₼${pay.toFixed(2)}</td>
+                      <td class="p-2 md:p-3 border border-gray-200 dark:border-gray-600">₼${pPay.toFixed(2)}</td>
+                      <td class="p-2 md:p-3 border border-gray-200 dark:border-gray-600">₼${iPay.toFixed(2)}</td>
+                      <td class="p-2 md:p-3 border border-gray-200 dark:border-gray-600">₼${bal>0?bal.toFixed(2):'0.00'}</td>
                     </tr>`;
         }
       }
